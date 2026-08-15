@@ -1,0 +1,16 @@
+target:
+  url: "http://127.0.0.1:8000"
+
+scan:
+  mode: "dirs"
+  threads: 10
+  timeout: 10
+  follow_redirects: true
+
+wordlists:
+  directories: "wordlists/directories.txt"
+  subdomains: "wordlists/subdomains.txt"
+
+output:
+  format: "json"
+  file: "output/results.json"
