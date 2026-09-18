@@ -2,7 +2,7 @@ import time
 
 import aiohttp
 
-from fuzzer.core.models import HTTPResult
+from fuzzer.core.models import BODY_SNIPPET_LIMIT, HTTPResult
 
 
 class HTTPClient:
@@ -33,11 +33,27 @@ class HTTPClient:
 
                 end_time = time.perf_counter()
 
+                # Decoded snippet only, for keyword/signature checks downstream
+                # (calibration, confidence scoring, traversal confirmation).
+                # Never stored past BODY_SNIPPET_LIMIT chars, and decoding
+                # failures fall back to an empty snippet rather than crashing
+                # the scan.
+                try:
+                    body_snippet = body[:BODY_SNIPPET_LIMIT].decode(
+                        response.get_encoding() if hasattr(response, "get_encoding") else "utf-8",
+                        errors="ignore",
+                    )
+                except (LookupError, UnicodeDecodeError):
+                    body_snippet = body[:BODY_SNIPPET_LIMIT].decode("utf-8", errors="ignore")
+
                 return HTTPResult(
                     url=url,
                     method=method,
                     status_code=response.status,
                     response_length=len(body),
                     response_time=end_time - start_time,
-                    headers=dict(response.headers)
+                    headers=dict(response.headers),
+                    body_snippet=body_snippet,
+                    resolved_url=str(response.url),
+                    location_header=response.headers.get("Location"),
                 )
