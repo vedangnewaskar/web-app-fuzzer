@@ -38,13 +38,28 @@ class HTTPClient:
                 # Never stored past BODY_SNIPPET_LIMIT chars, and decoding
                 # failures fall back to an empty snippet rather than crashing
                 # the scan.
+                
                 try:
-                    body_snippet = body[:BODY_SNIPPET_LIMIT].decode(
-                        response.get_encoding() if hasattr(response, "get_encoding") else "utf-8",
+                    encoding = (
+                        response.get_encoding()
+                        if hasattr(response, "get_encoding")
+                        else "utf-8"
+                    )
+
+                    decoded_body = body.decode(
+                        encoding,
                         errors="ignore",
                     )
-                except (LookupError, UnicodeDecodeError):
-                    body_snippet = body[:BODY_SNIPPET_LIMIT].decode("utf-8", errors="ignore")
+
+                    body_snippet = decoded_body[:BODY_SNIPPET_LIMIT]
+                
+                except(LookupError, UnicodeDecodeError):
+                    decoded_body = body.decode(
+                        "utf-8",
+                        errors="ignore",
+                    )
+
+                    body_snippet = decoded_body[:BODY_SNIPPET_LIMIT]
 
                 return HTTPResult(
                     url=url,
@@ -54,6 +69,7 @@ class HTTPClient:
                     response_time=end_time - start_time,
                     headers=dict(response.headers),
                     body_snippet=body_snippet,
+                    body=decoded_body,
                     resolved_url=str(response.url),
                     location_header=response.headers.get("Location"),
                 )

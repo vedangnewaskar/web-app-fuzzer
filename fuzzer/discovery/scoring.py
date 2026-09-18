@@ -24,7 +24,8 @@ DEFAULT_WEIGHTS: Dict[str, int] = {
     "status": 40,
     "length_delta": 35,
     "keyword": 15,
-    "response_time": 10,
+    "response_time": 5,
+    "structural_change":5,
     "soft_404_penalty": -100,
 }
 
@@ -111,6 +112,22 @@ def _response_time_score(
     ratio = min(delta_ratio, 1.0)
     return round(ratio * max_points, 2)
 
+def _structural_change_score(
+        fuzz_result : FuzzResult,
+        max_points: int,
+)->float:
+    
+    changed = fuzz_result.signals.get(
+        "structural_change",
+        0.0,
+
+    )
+
+    if changed<=0:
+        return 0.0
+    
+    return float(max_points)
+
 
 def _soft_404_penalty(
     baseline: Optional[CalibrationBaseline], http_result: HTTPResult, max_penalty: int
@@ -166,9 +183,10 @@ def score_result(
     length_delta = _length_delta_score(http_result, baseline, weights["length_delta"])
     keyword = _keyword_score(http_result.body_snippet, weights["keyword"])
     response_time = _response_time_score(http_result, baseline, weights["response_time"])
+    structural_change = _structural_change_score(fuzz_result, weights["structural_change"])
     soft_404_penalty = _soft_404_penalty(baseline, http_result, weights["soft_404_penalty"])
 
-    raw_total = status + length_delta + keyword + response_time + soft_404_penalty
+    raw_total = status + length_delta + keyword + response_time +structural_change+ soft_404_penalty
     confidence = int(round(max(0.0, min(100.0, raw_total))))
 
     fuzz_result.confidence = confidence
@@ -177,6 +195,7 @@ def score_result(
         "length_delta": length_delta,
         "keyword": keyword,
         "response_time": response_time,
+        "structural_change_score": structural_change,
         "soft_404_penalty": soft_404_penalty,
     })
     fuzz_result.confirmation = confirmation_for(confidence, thresholds)

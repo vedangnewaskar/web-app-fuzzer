@@ -16,6 +16,7 @@ class HTTPResult:
     response_time: float
     headers: Dict[str, str]  # {"Content-Type": "text/html"}
     body_snippet: str = ""  # first BODY_SNIPPET_LIMIT chars of the decoded body
+    body: str = ""
     resolved_url: str = ""  # final URL after aiohttp follows redirects (== url if none followed)
     location_header: Optional[str] = None  # raw Location header, present even when redirects aren't followed
 

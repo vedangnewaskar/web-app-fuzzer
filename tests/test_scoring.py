@@ -73,6 +73,25 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(without_keyword.signals["keyword"], 0)
         self.assertGreater(with_keyword.confidence, without_keyword.confidence)
 
+    def test_structural_change_adds_points(self):
+        baseline = _baseline()
+
+        unchanged = _fuzz()
+        unchanged.signals["structural_change"] = 0.0
+
+        changed = _fuzz()
+        changed.signals["structural_change"] = 1.0
+
+        unchanged_result = score_result(unchanged,_http(status=200, length=5000),baseline=baseline,)
+
+        changed_result = score_result(changed, _http(status=200, length=5000),baseline=baseline,)
+
+        self.assertEqual(unchanged_result.signals["structural_change"],0.0,)
+
+        self.assertEqual(changed_result.signals["structural_change_score"],DEFAULT_WEIGHTS["structural_change"],)
+        self.assertGreater(changed_result.confidence,unchanged_result.confidence,)
+
+
     def test_soft_404_match_suppresses_confidence_even_with_keywords(self):
         # The spec's core example: baseline is 200/15234 bytes; a real path
         # that happens to land exactly on that baseline must not score high,
