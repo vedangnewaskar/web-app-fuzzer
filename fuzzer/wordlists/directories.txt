@@ -1,0 +1,14 @@
+admin
+login
+api
+backup
+backup.zip
+config.php
+.env
+.git/HEAD
+.git/config
+dashboard
+users
+uploads
+test
+old

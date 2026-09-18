@@ -7,10 +7,44 @@ scan:
   timeout: 10
   follow_redirects: true
 
-wordlists:
-  directories: "wordlists/directories.txt"
-  subdomains: "wordlists/subdomains.txt"
+calibration:
+  probe_count: 3
+  length_tolerance: 25
 
+scoring:
+  weights:
+    status: 40
+    length_delta: 35
+    keyword: 15
+    response_time: 10
+    soft_404_penalty: -100
+  thresholds:
+    very_low: 0
+    low: 30
+    medium: 50
+    high: 70
+    very_high: 85
+
+recursion:
+  max_depth: 2
+  recurse_confidence_threshold: 70
+  max_total_requests: 2000
+
+mutation:
+  confidence_threshold: 50
+  max_mutations_per_result: 15
+  max_total_requests: 500
+  years: [2023, 2024, 2025, 2026]
+
+traversal:
+  confidence_by_confirmation:
+    confirmed: 95
+    suspected: 40
+
+wordlists:
+  directories: "fuzzer/wordlists/directories.txt"
+  subdomains: "fuzzer/wordlists/subdomains.txt"
+  
 output:
   format: "json"
   file: "output/results.json"
