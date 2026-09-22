@@ -16,7 +16,8 @@ scoring:
     status: 40
     length_delta: 35
     keyword: 15
-    response_time: 10
+    response_time: 5
+    structural_change: 5
     soft_404_penalty: -100
   thresholds:
     very_low: 0
